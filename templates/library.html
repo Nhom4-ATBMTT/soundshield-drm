@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Thư viện – SoundShield DRM{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🎧 Thư viện nhạc</h1>
+  <a href="{{ url_for('upload') }}" class="btn btn-primary">+ Upload bài mới</a>
+</div>
+
+{% if tracks %}
+<div class="track-grid">
+  {% for t in tracks %}
+  <div class="track-card">
+    <div class="track-cover">🎵</div>
+    <div class="track-info">
+      <div class="track-title">{{ t.title }}</div>
+      <div class="track-artist">{{ t.artist }}</div>
+      {% if t.album %}<div class="track-album">{{ t.album }}</div>{% endif %}
+    </div>
+    <div class="track-meta">
+      <span>🎧 {{ t.plays }} lượt</span>
+      <span>📤 {{ t.transfers }} gửi</span>
+    </div>
+    {% if t.filename %}
+    <audio controls class="track-audio">
+      <source src="{{ url_for('static', filename='uploads/' + t.filename) }}">
+    </audio>
+    {% elif t.audio_url %}
+    <audio controls class="track-audio">
+      <source src="{{ t.audio_url }}">
+    </audio>
+    <div class="no-file">🔗 Từ URL</div>
+    {% else %}
+    <div class="no-file">Chỉ lưu metadata</div>
+    {% endif %}
+    <div class="track-actions">
+      <a href="{{ url_for('transfers') }}?track_id={{ t.id }}" class="btn btn-sm btn-primary">📤 Gửi</a>
+      <form method="POST" action="{{ url_for('delete_track', track_id=t.id) }}"
+            onsubmit="return confirm('Xóa bài hát này?')">
+        <button type="submit" class="btn btn-sm btn-danger">🗑 Xóa</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-page">
+  <div class="empty-icon">🎵</div>
+  <h2>Chưa có bài hát nào</h2>
+  <p>Bắt đầu bằng cách upload bài nhạc đầu tiên.</p>
+  <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload ngay</a>
+</div>
+{% endif %}
+{% endblock %}

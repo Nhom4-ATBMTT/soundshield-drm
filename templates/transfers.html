@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Quản lý gửi – SoundShield DRM{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">📤 Quản lý gửi nhạc</h1>
+  <button class="btn btn-primary" onclick="openModal()">+ Gửi bài mới</button>
+</div>
+
+<!-- Send Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📤 Gửi nhạc bảo mật</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('send_transfer') }}">
+      <div class="form-group">
+        <label>Bài hát</label>
+        <select name="track_id" required>
+          <option value="">— Chọn bài hát —</option>
+          {% for t in tracks %}
+          <option value="{{ t.id }}" {% if request.args.get('track_id')|int == t.id %}selected{% endif %}>
+            {{ t.title }} – {{ t.artist }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên người nhận</label>
+          <input type="text" name="name" placeholder="VD: Đối tác A" required>
+        </div>
+        <div class="form-group">
+          <label>Email người nhận</label>
+          <input type="email" name="email" placeholder="email@example.com" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Giới hạn lượt nghe <small>(0 = vô hạn)</small></label>
+          <input type="number" name="max_plays" value="3" min="0">
+        </div>
+        <div class="form-group">
+          <label>Hiệu lực (ngày)</label>
+          <input type="number" name="days" value="7" min="1">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary">🚀 Tạo & Gửi email</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Transfer list -->
+<div class="card">
+  <div class="card-body">
+    {% if transfers %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Bài hát</th>
+          <th>Người nhận</th>
+          <th>Lượt nghe</th>
+          <th>Hết hạn</th>
+          <th>Email</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in transfers %}
+        <tr class="{% if r.is_revoked %}row-revoked{% elif r.expires_at < today %}row-expired{% endif %}">
+          <td>{{ r.id }}</td>
+          <td><strong>{{ r.track_title }}</strong></td>
+          <td>
+            <div>{{ r.recipient_name }}</div>
+            <div class="text-muted small">{{ r.recipient_email }}</div>
+          </td>
+          <td>
+            {{ r.plays_used }}{% if r.max_plays %} / {{ r.max_plays }}{% else %} / ∞{% endif %}
+          </td>
+          <td>{{ r.expires_at }}</td>
+          <td>
+            {% if r.email_sent %}
+              <span class="badge badge-green">✓ Đã gửi</span>
+            {% else %}
+              <span class="badge badge-red">✗ Lỗi</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.is_revoked %}
+              <span class="badge badge-red">Thu hồi</span>
+            {% elif r.expires_at < today %}
+              <span class="badge badge-gray">Hết hạn</span>
+            {% else %}
+              <span class="badge badge-green">Hoạt động</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-group">
+              <a href="{{ r.listen_url }}" target="_blank" class="btn btn-sm btn-outline" title="Mở link">🔗</a>
+              <button class="btn btn-sm btn-outline" onclick="copyText('{{ r.listen_url }}')" title="Sao chép">📋</button>
+              {% if not r.is_revoked and r.expires_at >= today %}
+              <form method="POST" action="{{ url_for('revoke_transfer', transfer_id=r.id) }}"
+                    onsubmit="return confirm('Thu hồi token này?')">
+                <button type="submit" class="btn btn-sm btn-danger" title="Thu hồi">🚫</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-page">
+      <div class="empty-icon">📤</div>
+      <h2>Chưa có transfer nào</h2>
+      <p>Nhấn <strong>+ Gửi bài mới</strong> để bắt đầu.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function openModal() { document.getElementById('modalOverlay').classList.add('active'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+{% if request.args.get('track_id') %}openModal();{% endif %}
+</script>
+{% endblock %}

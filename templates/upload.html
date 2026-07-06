@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Thêm nhạc – SoundShield DRM{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">⬆️ Thêm bài nhạc</h1>
+  <p class="page-sub">Upload file hoặc dán link URL từ website của bạn</p>
+</div>
+
+<div class="card" style="max-width:620px">
+  <div class="card-body">
+    <!-- Tab chọn phương thức -->
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('upload')">📁 Upload file</button>
+      <button class="tab-btn" onclick="switchTab('url')">🔗 Dán link URL</button>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+      <div class="form-group">
+        <label>Tên bài hát <span class="required">*</span></label>
+        <input type="text" name="title" placeholder="VD: Nơi này có anh" required>
+      </div>
+      <div class="form-group">
+        <label>Nghệ sĩ <span class="required">*</span></label>
+        <input type="text" name="artist" placeholder="VD: Sơn Tùng M-TP" required>
+      </div>
+      <div class="form-group">
+        <label>Album</label>
+        <input type="text" name="album" placeholder="VD: m-tp M-TP (tuỳ chọn)">
+      </div>
+
+      <!-- Tab: Upload file -->
+      <div id="tab-upload">
+        <div class="form-group">
+          <label>File nhạc</label>
+          <div class="file-drop" id="fileDrop">
+            <div class="file-drop-icon">🎵</div>
+            <p>Kéo thả file vào đây hoặc <label for="fileInput" class="file-label">chọn file</label></p>
+            <p class="file-note">Hỗ trợ: MP3, WAV, OGG, FLAC, M4A</p>
+            <input type="file" id="fileInput" name="file" accept=".mp3,.wav,.ogg,.flac,.m4a" hidden>
+          </div>
+          <div id="fileName" class="file-name"></div>
+        </div>
+      </div>
+
+      <!-- Tab: URL -->
+      <div id="tab-url" style="display:none">
+        <div class="form-group">
+          <label>Link URL bài hát <span class="required">*</span></label>
+          <input type="url" name="audio_url" id="audioUrlInput"
+            placeholder="https://example.com/music/baihat.mp3">
+          <p class="field-hint">
+            Dán link trực tiếp đến file nhạc (MP3, WAV…) từ website, Google Drive (direct link), Dropbox, v.v.
+          </p>
+        </div>
+        <div id="urlPreview" class="url-preview" style="display:none">
+          <p class="url-preview-label">Xem trước:</p>
+          <audio controls id="urlAudioPreview" style="width:100%"></audio>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('library') }}" class="btn btn-outline">Hủy</a>
+        <button type="submit" class="btn btn-primary">✅ Thêm bài hát</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  document.getElementById('tab-upload').style.display = tab === 'upload' ? '' : 'none';
+  document.getElementById('tab-url').style.display   = tab === 'url'    ? '' : 'none';
+
+  // khi chuyển tab, clear input không dùng
+  if (tab === 'url') {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileName').textContent = '';
+  } else {
+    document.getElementById('audioUrlInput').value = '';
+    document.getElementById('urlPreview').style.display = 'none';
+  }
+}
+
+// Preview URL nhạc
+document.getElementById('audioUrlInput')?.addEventListener('input', function() {
+  const url = this.value.trim();
+  const preview = document.getElementById('urlPreview');
+  const audio   = document.getElementById('urlAudioPreview');
+  if (url) {
+    audio.src = url;
+    preview.style.display = '';
+  } else {
+    preview.style.display = 'none';
+  }
+});
+</script>
+{% endblock %}

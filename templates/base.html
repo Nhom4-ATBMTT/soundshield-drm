@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SoundShield DRM{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">🛡️</span>
+        <div>
+          <div class="brand-name">SoundShield</div>
+          <div class="brand-sub">DRM Music Delivery</div>
+        </div>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">ST</div>
+        <div>
+          <div class="sidebar-user-name">Sơn Tùng M-TP</div>
+          <div class="sidebar-user-role">Sender Client</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section-label">Điều hướng</div>
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="{{ url_for('library') }}" class="nav-item {% if request.endpoint == 'library' %}active{% endif %}">
+          <span class="nav-icon">🎵</span> Kho nhạc
+          {% if total_tracks_badge %}<span class="nav-badge">{{ total_tracks_badge }}</span>{% endif %}
+        </a>
+        <a href="{{ url_for('upload') }}" class="nav-item {% if request.endpoint == 'upload' %}active{% endif %}">
+          <span class="nav-icon">📦</span> Secure Upload
+        </a>
+        <a href="{{ url_for('transfers') }}" class="nav-item {% if request.endpoint == 'transfers' %}active{% endif %}">
+          <span class="nav-icon">🔑</span> Transfers
+          {% if active_transfers_badge %}<span class="nav-badge">{{ active_transfers_badge }}</span>{% endif %}
+        </a>
+        <a href="{{ url_for('transfers') }}" class="nav-item">
+          <span class="nav-icon">📈</span> Xuất dữ liệu
+        </a>
+        <a href="{{ url_for('library') }}" class="nav-item">
+          <span class="nav-icon">📡</span> Top Trending
+        </a>
+      </nav>
+
+      <div class="sidebar-footer"></div>
+    </aside>
+
+    <!-- Center column: topbar + main content -->
+    <div class="center-col">
+      <header class="topbar">
+        <h1 class="topbar-greeting">{{ greeting|default('Chào bạn') }} <span class="wave">🌙</span></h1>
+        <div class="topbar-search">
+          <span class="topbar-search-icon">🔍</span>
+          <input type="text" placeholder="Tìm bài hát, nghệ sĩ...">
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn">🔔<span class="icon-dot"></span></button>
+          <button class="icon-btn">⚙️</button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="alerts">
+              {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }}">{{ msg }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <!-- Right panel: activity log -->
+    <aside class="right-panel">
+      <div class="right-panel-header">
+        <span class="right-panel-icon">📜</span> Nhật Ký Hoạt Động
+      </div>
+      <div class="log-list">
+        {% block activity_log %}
+        {% for level, msg in (activity_log|default([])) %}
+        <div class="log-entry">
+          <div class="log-meta">
+            <span class="log-time">[{{ "%02d:%02d:%02d"|format(range(10,23)|random, range(0,59)|random, range(0,59)|random) }}]</span>
+            <span class="log-level log-level--{{ level|lower }}">{{ level }}</span>
+          </div>
+          <div class="log-msg">{{ msg }}</div>
+        </div>
+        {% else %}
+        <div class="log-entry">
+          <div class="log-meta"><span class="log-level log-level--info">INFO</span></div>
+          <div class="log-msg">Hệ thống sẵn sàng giám sát hoạt động.</div>
+        </div>
+        {% endfor %}
+        {% endblock %}
+      </div>
+
+      <div class="right-panel-header right-panel-header--top">
+        <span class="right-panel-icon">🎤</span> Nghệ Sĩ Phổ Biến
+      </div>
+      <div class="artist-list">
+        {% block top_artists %}
+        {% for a in (top_artists|default([])) %}
+        <div class="artist-row">
+          <div class="artist-avatar">{{ a.artist[:2]|upper }}</div>
+          <div class="artist-info">
+            <div class="artist-name">{{ a.artist }}</div>
+            <div class="artist-sub">{{ a.cnt }} bài hát</div>
+          </div>
+          <span class="artist-heart">♥</span>
+        </div>
+        {% else %}
+        <p class="empty-state">Chưa có dữ liệu nghệ sĩ.</p>
+        {% endfor %}
+        {% endblock %}
+      </div>
+    </aside>
+  </div>
+
+  <!-- Bottom player bar -->
+  <div class="player-bar">
+    <div class="player-track">
+      <div class="player-cover">🎤</div>
+      <div>
+        <div class="player-title">Making My Way</div>
+        <div class="player-artist">MCK</div>
+      </div>
+      <span class="player-heart">♥</span>
+    </div>
+    <div class="player-controls">
+      <div class="player-buttons">
+        <button class="player-btn">🔁</button>
+        <button class="player-btn">⏮️</button>
+        <button class="player-btn player-btn--play">⏸️</button>
+        <button class="player-btn">⏭️</button>
+        <button class="player-btn">🔄</button>
+      </div>
+      <div class="player-progress">
+        <span class="player-time">2:14</span>
+        <div class="progress-track"><div class="progress-fill"></div></div>
+        <span class="player-time">3:05</span>
+      </div>
+    </div>
+    <div class="player-volume">
+      <span>🔊</span>
+      <div class="progress-track progress-track--volume"><div class="progress-fill" style="width:70%"></div></div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

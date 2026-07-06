@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ row.title }} – SoundShield</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="listen-page">
+  <div class="listen-box">
+    <div class="listen-brand">🎵 SoundShield DRM</div>
+    <div class="listen-cover">🎶</div>
+    <h1 class="listen-title">{{ row.title }}</h1>
+    <p class="listen-artist">{{ row.artist }}</p>
+    {% if row.album %}<p class="listen-album">{{ row.album }}</p>{% endif %}
+
+    <div class="listen-meta">
+      <span class="meta-badge">
+        🎧 Lượt còn lại:
+        {% if row.max_plays %}{{ row.max_plays - row.plays_used }}{% else %}∞{% endif %}
+      </span>
+      <span class="meta-badge">📅 Hết hạn: {{ row.expires_at }}</span>
+    </div>
+
+    {% if audio_url %}
+    <audio controls autoplay class="listen-player">
+      <source src="{{ audio_url }}">
+      Trình duyệt của bạn không hỗ trợ phát nhạc.
+    </audio>
+    {% else %}
+    <div class="no-audio-notice">
+      ℹ️ Bài hát này chỉ lưu metadata, không có file nhạc đính kèm.
+    </div>
+    {% endif %}
+
+    <div class="listen-warning">
+      🔒 Link này được cấp riêng cho bạn. Không chia sẻ với người khác.
+    </div>
+  </div>
+</body>
+</html>

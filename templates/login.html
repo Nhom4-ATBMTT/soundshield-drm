@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập – SoundShield DRM</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-page">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-icon">🎵</div>
+      <h1>SoundShield DRM</h1>
+      <p>Hệ thống quản lý phát nhạc có bản quyền</p>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label>Mật khẩu quản trị</label>
+        <input type="password" name="password" placeholder="Nhập mật khẩu..." autofocus required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Đăng nhập</button>
+    </form>
+    <p class="login-note">Mặc định: <code>admin123</code> — đặt biến môi trường <code>ADMIN_PASSWORD</code> để thay đổi</p>
+  </div>
+</body>
+</html>
